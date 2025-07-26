@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Personal Finance Tracker</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- PWA manifest -->
+    <link rel="manifest" href="manifest.webmanifest" />
+  </head>
+  <body>
+    <!-- Navigation and top bar -->
+    <nav class="navbar">
+      <h1>Finance&nbsp;Tracker</h1>
+      <div class="top-controls">
+        <label for="currency-selector" class="currency-label">Currency:</label>
+        <select id="currency-selector" aria-label="Select currency">
+          <option value="THB">THB (฿)</option>
+          <option value="USD">USD ($)</option>
+          <option value="EUR">EUR (€)</option>
+        </select>
+        <!-- Monthly budget input for debt repayment -->
+        <label for="budget-input" class="budget-label">Monthly Budget:</label>
+        <!-- Use a text input for budget so we can display comma separated numbers. -->
+        <input type="text" id="budget-input" placeholder="0.00" />
+
+        <!-- Payoff strategy selector -->
+        <label for="strategy-selector" class="strategy-label">Strategy:</label>
+        <select id="strategy-selector" aria-label="Select payoff strategy">
+          <option value="avalanche">Avalanche</option>
+          <option value="snowball">Snowball</option>
+          <option value="highest_balance">Highest Balance</option>
+          <option value="due_date">Due Date</option>
+        </select>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#" data-section="dashboard" class="nav-link active">Dashboard</a></li>
+        <li><a href="#" data-section="cards" class="nav-link">Cards</a></li>
+        <li><a href="#" data-section="loans" class="nav-link">Loans</a></li>
+        <li><a href="#" data-section="insights" class="nav-link">Insights</a></li>
+      </ul>
+    </nav>
+
+    <!-- Main content -->
+    <main>
+      <!-- Dashboard Section -->
+      <section id="dashboard" class="section active">
+        <h2>Dashboard</h2>
+        <div id="summary" class="summary"></div>
+        <!-- Chart container for dashboard visuals -->
+        <!-- Visuals row: bar chart and debt distribution chart side by side on larger screens -->
+        <div class="charts-wrapper">
+          <!-- Primary bar chart showing upcoming/overdue totals, balances, min payments and budget -->
+          <div class="chart-container">
+            <canvas id="dashboard-chart" height="150"></canvas>
+          </div>
+          <!-- Doughnut chart for debt distribution (cards vs loans) -->
+          <div class="chart-container">
+            <canvas id="debt-distribution-chart" height="150"></canvas>
+          </div>
+        </div>
+        <!-- Budget usage indicator -->
+        <div id="budget-usage-container" class="budget-usage-container">
+          <h4>Budget Usage</h4>
+          <div class="progress-bar">
+            <div class="progress-fill" id="budget-progress"></div>
+          </div>
+          <p id="budget-usage-text" class="budget-usage-text"></p>
+        </div>
+
+        <!-- Strategy payoff projection chart -->
+        <div class="chart-container">
+          <canvas id="strategy-chart" height="150"></canvas>
+        </div>
+        <!-- Amortisation schedule table -->
+        <div id="schedule-container" class="schedule-container">
+          <h4>Amortisation Schedule</h4>
+          <div class="schedule-table-wrapper">
+            <table id="schedule-table">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Start Balance</th>
+                  <th>Payment</th>
+                  <th>Interest</th>
+                  <th>End Balance</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="recommendations" class="list-container"></div>
+      </section>
+
+      <!-- Bills Section -->
+      <!-- Loans Section -->
+      <section id="loans" class="section">
+        <h2>Manage Loans</h2>
+        <form id="loan-form" class="form">
+          <div class="form-group">
+            <label for="loan-name">Loan Name</label>
+            <input type="text" id="loan-name" required />
+          </div>
+          <div class="form-group">
+            <label for="loan-principal">Principal</label>
+            <input type="number" id="loan-principal" step="0.01" min="0" required />
+          </div>
+          <div class="form-group">
+            <label for="loan-rate">Interest Rate (%)</label>
+            <input type="number" id="loan-rate" step="0.01" min="0" required />
+          </div>
+          <div class="form-group">
+            <label for="loan-term">Term (months)</label>
+            <input type="number" id="loan-term" step="1" min="1" required />
+          </div>
+          <div class="form-group">
+            <label for="loan-due-date">Next Payment Due</label>
+            <input type="date" id="loan-due-date" />
+          </div>
+          <button type="submit">Add Loan</button>
+        </form>
+        <h3>Existing Loans</h3>
+        <div id="loans-list" class="list-container"></div>
+      </section>
+
+      <!-- Cards Section -->
+      <section id="cards" class="section">
+        <h2>Manage Credit Cards</h2>
+        <form id="card-form" class="form">
+          <div class="form-group">
+            <label for="card-name">Card Name</label>
+            <input type="text" id="card-name" required />
+          </div>
+          <div class="form-group">
+            <label for="card-balance">Balance</label>
+            <input type="number" id="card-balance" step="0.01" min="0" required />
+          </div>
+          <div class="form-group">
+            <label for="card-rate">Interest Rate (%)</label>
+            <input type="number" id="card-rate" step="0.01" min="0" placeholder="e.g., 20" />
+          </div>
+          <div class="form-group">
+            <label for="card-due-date">Payment Due Date</label>
+            <input type="date" id="card-due-date" required />
+          </div>
+          <div class="form-group">
+            <label for="card-installments">Installments (months)</label>
+            <input type="number" id="card-installments" min="0" placeholder="0" />
+          </div>
+          <div class="form-group">
+            <label for="card-installment-amount">Installment Amount</label>
+            <input type="number" id="card-installment-amount" step="0.01" min="0" placeholder="0.00" />
+          </div>
+          <button type="submit">Add Card</button>
+        </form>
+        <h3>Existing Cards</h3>
+        <div id="cards-list" class="list-container"></div>
+      </section>
+
+      <!-- Insights Section -->
+      <section id="insights" class="section">
+        <h2>Financial Insights</h2>
+        <div id="insights-content" class="insights"></div>
+      </section>
+    </main>
+
+    <!-- Include Chart.js library for charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>

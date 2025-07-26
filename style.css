@@ -1,0 +1,397 @@
+/*
+ * Modern styling for the Finance Tracker.
+ * This stylesheet defines a light, clean aesthetic inspired by popular budgeting apps.
+ */
+
+/* Theme variables */
+:root {
+  --primary-color: #5864e2;      /* purple-blue accent */
+  --primary-dark: #3b47b0;
+  --secondary-color: #f5f7ff;     /* background tint */
+  --card-bg: #ffffff;
+  --text-color: #333333;
+  --muted-text: #777777;
+  --danger-color: #d32f2f;
+  --warning-color: #e65100;
+  --success-color: #4caf50;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  line-height: 1.5;
+}
+
+/* Navigation & top controls */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.top-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.currency-label {
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+/* Strategy label styling */
+.strategy-label {
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+#strategy-selector {
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  background: #fff;
+  color: var(--primary-color);
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Budget label styling */
+.budget-label {
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+/* Budget input styling */
+#budget-input {
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  background: #fff;
+  color: var(--primary-color);
+  font-weight: 600;
+  width: 100px;
+  cursor: pointer;
+  outline: none;
+}
+
+#currency-selector {
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  background: #fff;
+  color: var(--primary-color);
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  color: #e5eaf9;
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  transition: background 0.3s;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+main {
+  padding: 1rem;
+}
+
+/* Section visibility */
+.section {
+  display: none;
+}
+.section.active {
+  display: block;
+}
+
+/* Forms */
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.form-group {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.form-group input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #f9faff;
+}
+
+.form button {
+  padding: 0.6rem 1.2rem;
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 1rem;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.form button:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Lists & cards */
+.list-container {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  margin-bottom: 2rem;
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem;
+  border-radius: 10px;
+  margin-bottom: 0.6rem;
+  background: #fdfdff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.list-item:last-child {
+  margin-bottom: 0;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.list-item button {
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: opacity 0.2s;
+  color: #fff;
+}
+
+.btn-delete {
+  background-color: var(--danger-color);
+}
+.btn-delete:hover {
+  opacity: 0.8;
+}
+
+.btn-toggle {
+  background-color: var(--success-color);
+}
+.btn-toggle.paid {
+  background-color: #9e9e9e;
+}
+
+/* Edit button */
+.btn-edit {
+  background-color: var(--primary-color);
+}
+.btn-edit:hover {
+  opacity: 0.8;
+}
+
+/* Status colours */
+.overdue {
+  color: var(--danger-color);
+  font-weight: bold;
+}
+.upcoming {
+  color: var(--warning-color);
+}
+
+/* Summary */
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.summary-card {
+  flex: 1 1 200px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s;
+}
+
+.summary-card:hover {
+  transform: translateY(-3px);
+}
+
+.summary-card h3 {
+  margin-top: 0;
+  font-size: 0.9rem;
+  color: var(--muted-text);
+}
+
+.summary-card p {
+  font-size: 1.4rem;
+  margin: 0.3rem 0 0;
+  font-weight: 700;
+}
+
+/* Chart container */
+.chart-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Wrapper for charts to allow horizontal layout on wide screens */
+.charts-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.charts-wrapper .chart-container {
+  flex: 1 1 300px;
+}
+
+/* Budget usage indicator */
+.budget-usage-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.budget-usage-container h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: var(--muted-text);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.4rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary-color);
+  width: 0%;
+  border-radius: 6px;
+  transition: width 0.5s;
+}
+
+.budget-usage-text {
+  font-size: 0.85rem;
+  color: var(--muted-text);
+  margin: 0;
+}
+
+/* Amortisation schedule */
+.schedule-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+.schedule-container h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: var(--muted-text);
+}
+.schedule-table-wrapper {
+  overflow-x: auto;
+}
+.schedule-container table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.schedule-container th,
+.schedule-container td {
+  padding: 0.4rem;
+  text-align: right;
+  border-bottom: 1px solid #eee;
+}
+.schedule-container th {
+  text-align: left;
+  color: var(--muted-text);
+}
+
+/* Insights */
+.insights {
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
