@@ -10,6 +10,10 @@ let state = {
   transactions: [],
   // goals: savings and emergency fund targets
   goals: [],
+  // subscriptions: recurring bills such as memberships or utilities
+  subscriptions: [],
+  // current available cash balance
+  cashBalance: 0,
   // currency code
   currency: 'THB',
   // monthly budget available for debt repayment
@@ -370,12 +374,17 @@ function loadData() {
     const currency = localStorage.getItem('currency');
     const transactions = JSON.parse(localStorage.getItem('transactions'));
     const goals = JSON.parse(localStorage.getItem('goals'));
+    const subscriptions = JSON.parse(localStorage.getItem('subscriptions'));
+    const cashVal = localStorage.getItem('cashBalance');
     const budgetVal = localStorage.getItem('budget');
     const storedStrategy = localStorage.getItem('strategy');
     state.cards = Array.isArray(cards) ? cards : [];
     state.loans = Array.isArray(loans) ? loans : [];
     state.transactions = Array.isArray(transactions) ? transactions : [];
     state.goals = Array.isArray(goals) ? goals : [];
+    state.subscriptions = Array.isArray(subscriptions) ? subscriptions : [];
+    const parsedCash = parseFloat(cashVal);
+    state.cashBalance = !isNaN(parsedCash) ? parsedCash : 0;
     state.currency = currency || 'THB';
     const parsedBudget = parseFloat(budgetVal);
     state.budget = !isNaN(parsedBudget) && parsedBudget >= 0 ? parsedBudget : 0;
@@ -403,6 +412,16 @@ function saveLoans() {
 // Utility: save transactions to localStorage
 function saveTransactions() {
   localStorage.setItem('transactions', JSON.stringify(state.transactions));
+}
+
+// Utility: save subscriptions to localStorage
+function saveSubscriptions() {
+  localStorage.setItem('subscriptions', JSON.stringify(state.subscriptions));
+}
+
+// Utility: save cash balance to localStorage
+function saveCash() {
+  localStorage.setItem('cashBalance', state.cashBalance);
 }
 
 // Utility: save goals to localStorage
@@ -611,6 +630,14 @@ function handleAddTransaction(e) {
   };
   state.transactions.push(newTx);
   saveTransactions();
+  // Update cash balance based on transaction amount
+  state.cashBalance += amount;
+  saveCash();
+  // Update cash input display if present
+  const cashInput = document.getElementById('cash-input');
+  if (cashInput) {
+    cashInput.value = formatCurrencyValue(state.cashBalance);
+  }
   renderTransactions();
   renderInsights();
   // Reset form fields
@@ -687,6 +714,59 @@ function renderGoals() {
       state.goals = state.goals.filter((g) => g.id !== id);
       saveGoals();
       renderGoals();
+      renderInsights();
+    });
+  });
+}
+
+// Event handler for adding a recurring subscription or bill
+function handleAddSubscription(e) {
+  e.preventDefault();
+  const name = document.getElementById('subscription-name').value.trim();
+  const amountVal = parseFloat(document.getElementById('subscription-amount').value);
+  const frequency = document.getElementById('subscription-frequency').value;
+  const nextDate = document.getElementById('subscription-next-date').value;
+  if (!name || isNaN(amountVal) || amountVal <= 0 || !frequency || !nextDate) return;
+  const newSub = {
+    id: Date.now(),
+    name,
+    amount: amountVal,
+    frequency,
+    nextDate,
+  };
+  state.subscriptions.push(newSub);
+  saveSubscriptions();
+  renderSubscriptions();
+  renderDashboard();
+  renderInsights();
+  document.getElementById('subscription-form').reset();
+}
+
+// Render the list of subscriptions
+function renderSubscriptions() {
+  const container = document.getElementById('subscriptions-list');
+  if (!container) return;
+  container.innerHTML = '';
+  if (!state.subscriptions || state.subscriptions.length === 0) {
+    container.textContent = 'No subscriptions added yet.';
+    return;
+  }
+  const ul = document.createElement('ul');
+  state.subscriptions.forEach((sub) => {
+    const li = document.createElement('li');
+    const currencySymbol = CURRENCY_SYMBOLS[state.currency] || '';
+    li.innerHTML = `<strong>${sub.name}</strong> – ${currencySymbol}${formatCurrencyValue(sub.amount)} (${sub.frequency}) – Next: ${sub.nextDate} <button data-id="${sub.id}" class="delete-sub">Delete</button>`;
+    ul.appendChild(li);
+  });
+  container.appendChild(ul);
+  // Add delete handlers
+  container.querySelectorAll('.delete-sub').forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      const id = parseInt(event.target.getAttribute('data-id'));
+      state.subscriptions = state.subscriptions.filter((s) => s.id !== id);
+      saveSubscriptions();
+      renderSubscriptions();
+      renderDashboard();
       renderInsights();
     });
   });
@@ -925,6 +1005,23 @@ function renderDashboard() {
         if (diffDays >= 0 && diffDays <= 7) {
           upcomingCount++;
           upcomingAmount += payment;
+        }
+      }
+    }
+  });
+  // For subscriptions (recurring bills)
+  state.subscriptions.forEach((sub) => {
+    const dueDate = sub.nextDate ? new Date(sub.nextDate) : null;
+    const amount = sub.amount;
+    if (dueDate) {
+      if (dueDate < truncateDate) {
+        overdueCount++;
+        overdueAmount += amount;
+      } else {
+        const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+        if (diffDays >= 0 && diffDays <= 7) {
+          upcomingCount++;
+          upcomingAmount += amount;
         }
       }
     }
@@ -1335,6 +1432,26 @@ function renderInsights() {
   const netLabel = net >= 0 ? 'Net Cash Flow' : 'Net Cash Flow';
   html += `<p><strong>${netLabel}:</strong> ${currencySymbol}${formatCurrencyValue(net)}</p>`;
 
+  // Display current cash balance
+  html += `<p><strong>Current Cash Balance:</strong> ${currencySymbol}${formatCurrencyValue(state.cashBalance)}</p>`;
+
+  // Display total recurring bills per month, if any
+  if (state.subscriptions && state.subscriptions.length > 0) {
+    const monthlyCost = state.subscriptions.reduce((sum, sub) => {
+      const amt = sub.amount;
+      switch (sub.frequency) {
+        case 'weekly':
+          return sum + amt * 4.33;
+        case 'yearly':
+          return sum + amt / 12;
+        case 'monthly':
+        default:
+          return sum + amt;
+      }
+    }, 0);
+    html += `<p><strong>Total Recurring Bills (per month):</strong> ${currencySymbol}${formatCurrencyValue(monthlyCost)}</p>`;
+  }
+
   // Append savings summary
   if (state.goals && state.goals.length > 0) {
     const totalSavings = state.goals.reduce((sum, g) => sum + g.saved, 0);
@@ -1434,6 +1551,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Goal form handler
   const goalForm = document.getElementById('goal-form');
   if (goalForm) goalForm.addEventListener('submit', handleAddGoal);
+
+  // Subscription form handler
+  const subscriptionForm = document.getElementById('subscription-form');
+  if (subscriptionForm) subscriptionForm.addEventListener('submit', handleAddSubscription);
   // Currency selector change handler
   const currencySelect = document.getElementById('currency-selector');
   if (currencySelect) {
@@ -1449,6 +1570,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderLoans();
       renderTransactions();
       renderGoals();
+      renderSubscriptions();
     });
   }
 
@@ -1483,6 +1605,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Cash balance input handler
+  const cashInput = document.getElementById('cash-input');
+  if (cashInput) {
+    // Set initial value with comma separators
+    cashInput.value = formatCurrencyValue(state.cashBalance);
+    // Format input on the fly
+    cashInput.addEventListener('input', (e) => {
+      const rawVal = e.target.value.replace(/,/g, '');
+      const numVal = parseFloat(rawVal);
+      if (!isNaN(numVal)) {
+        e.target.value = formatCurrencyValue(numVal);
+      } else {
+        e.target.value = rawVal;
+      }
+    });
+    // On change, update state and save
+    cashInput.addEventListener('change', (e) => {
+      const rawVal = e.target.value.replace(/,/g, '');
+      const numVal = parseFloat(rawVal);
+      state.cashBalance = !isNaN(numVal) ? numVal : 0;
+      saveCash();
+      e.target.value = formatCurrencyValue(state.cashBalance);
+      renderInsights();
+    });
+  }
+
   // Strategy selector handler
   const strategySelect = document.getElementById('strategy-selector');
   if (strategySelect) {
@@ -1497,12 +1645,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   // Render initial state
+  // Always draw all sections on first load.  This ensures new data
+  // such as transactions, savings goals and recurring subscriptions
+  // show up immediately when the app is opened.
   renderDashboard();
   renderCards();
   renderLoans();
   renderInsights();
   renderTransactions();
   renderGoals();
+  renderSubscriptions();
 
   // Register service worker for PWA capabilities
   registerServiceWorker();

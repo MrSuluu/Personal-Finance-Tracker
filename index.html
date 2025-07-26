@@ -24,6 +24,10 @@
         <!-- Use a text input for budget so we can display comma separated numbers. -->
         <input type="text" id="budget-input" placeholder="0.00" />
 
+        <!-- Current cash balance input -->
+        <label for="cash-input" class="cash-label">Cash Balance:</label>
+        <input type="text" id="cash-input" placeholder="0.00" />
+
         <!-- Payoff strategy selector -->
         <label for="strategy-selector" class="strategy-label">Strategy:</label>
         <select id="strategy-selector" aria-label="Select payoff strategy">
@@ -40,6 +44,7 @@
         <li><a href="#" data-section="insights" class="nav-link">Insights</a></li>
         <li><a href="#" data-section="transactions" class="nav-link">Transactions</a></li>
         <li><a href="#" data-section="savings" class="nav-link">Savings</a></li>
+        <li><a href="#" data-section="subscriptions" class="nav-link">Subscriptions</a></li>
       </ul>
     </nav>
 
@@ -226,6 +231,36 @@
         </form>
         <h3>Your Goals</h3>
         <div id="goals-list" class="list-container"></div>
+      </section>
+
+      <!-- Subscriptions Section -->
+      <section id="subscriptions" class="section">
+        <h2>Recurring Bills &amp; Subscriptions</h2>
+        <form id="subscription-form" class="form">
+          <div class="form-group">
+            <label for="subscription-name">Name</label>
+            <input type="text" id="subscription-name" required placeholder="e.g., Netflix" title="Name of the subscription or bill" />
+          </div>
+          <div class="form-group">
+            <label for="subscription-amount">Amount</label>
+            <input type="number" id="subscription-amount" step="0.01" min="0.01" required placeholder="0.00" title="Amount per billing cycle" />
+          </div>
+          <div class="form-group">
+            <label for="subscription-frequency">Frequency</label>
+            <select id="subscription-frequency" required title="How often the bill recurs">
+              <option value="monthly">Monthly</option>
+              <option value="weekly">Weekly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="subscription-next-date">Next Due Date</label>
+            <input type="date" id="subscription-next-date" required title="Next payment due date (YYYY-MM-DD)" />
+          </div>
+          <button type="submit">Add Subscription</button>
+        </form>
+        <h3>Existing Subscriptions</h3>
+        <div id="subscriptions-list" class="list-container"></div>
       </section>
     </main>
 
