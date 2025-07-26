@@ -348,6 +348,24 @@ main {
   transition: width 0.5s;
 }
 
+/* Savings goals actions layout */
+.goal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.goal-actions input {
+  flex: 1 1 60%;
+  min-width: 120px;
+}
+
+.goal-actions button {
+  flex: 1 1 auto;
+  padding: 0.3rem 0.5rem;
+}
+
 .budget-usage-text {
   font-size: 0.85rem;
   color: var(--muted-text);

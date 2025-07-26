@@ -6,6 +6,10 @@ let state = {
   cards: [],
   // loans: personal loans or other debts
   loans: [],
+  // transactions: income and expenses
+  transactions: [],
+  // goals: savings and emergency fund targets
+  goals: [],
   // currency code
   currency: 'THB',
   // monthly budget available for debt repayment
@@ -364,10 +368,14 @@ function loadData() {
     const cards = JSON.parse(localStorage.getItem('cards'));
     const loans = JSON.parse(localStorage.getItem('loans'));
     const currency = localStorage.getItem('currency');
+    const transactions = JSON.parse(localStorage.getItem('transactions'));
+    const goals = JSON.parse(localStorage.getItem('goals'));
     const budgetVal = localStorage.getItem('budget');
     const storedStrategy = localStorage.getItem('strategy');
     state.cards = Array.isArray(cards) ? cards : [];
     state.loans = Array.isArray(loans) ? loans : [];
+    state.transactions = Array.isArray(transactions) ? transactions : [];
+    state.goals = Array.isArray(goals) ? goals : [];
     state.currency = currency || 'THB';
     const parsedBudget = parseFloat(budgetVal);
     state.budget = !isNaN(parsedBudget) && parsedBudget >= 0 ? parsedBudget : 0;
@@ -390,6 +398,16 @@ function saveCards() {
 // Utility: save loans to localStorage
 function saveLoans() {
   localStorage.setItem('loans', JSON.stringify(state.loans));
+}
+
+// Utility: save transactions to localStorage
+function saveTransactions() {
+  localStorage.setItem('transactions', JSON.stringify(state.transactions));
+}
+
+// Utility: save goals to localStorage
+function saveGoals() {
+  localStorage.setItem('goals', JSON.stringify(state.goals));
 }
 
 // Bills functionality has been removed from the application. Define a no-op
@@ -570,6 +588,130 @@ function handleAddLoan(e) {
   renderDashboard();
   renderInsights();
   document.getElementById('loan-form').reset();
+}
+
+// Event handler for adding a transaction (income or expense)
+function handleAddTransaction(e) {
+  e.preventDefault();
+  const desc = document.getElementById('transaction-desc').value.trim();
+  const amountVal = parseFloat(document.getElementById('transaction-amount').value);
+  const date = document.getElementById('transaction-date').value;
+  const type = document.getElementById('transaction-type').value;
+  const category = document.getElementById('transaction-category').value.trim();
+  if (!desc || isNaN(amountVal) || !date) return;
+  // Positive amounts for income, negative for expenses
+  const amount = type === 'expense' ? -Math.abs(amountVal) : Math.abs(amountVal);
+  const newTx = {
+    id: Date.now(),
+    desc,
+    amount,
+    date,
+    type,
+    category,
+  };
+  state.transactions.push(newTx);
+  saveTransactions();
+  renderTransactions();
+  renderInsights();
+  // Reset form fields
+  document.getElementById('transaction-form').reset();
+}
+
+// Event handler for adding a new savings goal
+function handleAddGoal(e) {
+  e.preventDefault();
+  const name = document.getElementById('goal-name').value.trim();
+  const targetVal = parseFloat(document.getElementById('goal-target').value);
+  if (!name || isNaN(targetVal) || targetVal <= 0) return;
+  const newGoal = {
+    id: Date.now(),
+    name,
+    target: targetVal,
+    saved: 0,
+  };
+  state.goals.push(newGoal);
+  saveGoals();
+  renderGoals();
+  renderInsights();
+  document.getElementById('goal-form').reset();
+}
+
+// Render the list of savings goals
+function renderGoals() {
+  const container = document.getElementById('goals-list');
+  if (!container) return;
+  container.innerHTML = '';
+  if (!state.goals || state.goals.length === 0) {
+    container.textContent = 'No savings goals yet.';
+    return;
+  }
+  const ul = document.createElement('ul');
+  state.goals.forEach((goal) => {
+    const li = document.createElement('li');
+    const currencySymbol = CURRENCY_SYMBOLS[state.currency] || '';
+    const progress = goal.target > 0 ? (goal.saved / goal.target) * 100 : 0;
+    const progressPercent = Math.min(progress, 100);
+    li.innerHTML = `
+      <div class="goal-header"><strong>${goal.name}</strong> – ${currencySymbol}${formatCurrencyValue(goal.saved)} of ${currencySymbol}${formatCurrencyValue(goal.target)}</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${progressPercent}%"></div></div>
+      <div class="goal-actions">
+        <input type="number" min="0.01" step="0.01" placeholder="Add amount" id="contrib-${goal.id}" />
+        <button data-id="${goal.id}" class="add-contribution">Add Contribution</button>
+        <button data-id="${goal.id}" class="delete-goal">Delete</button>
+      </div>
+    `;
+    ul.appendChild(li);
+  });
+  container.appendChild(ul);
+  // Event listeners for contribution and deletion
+  container.querySelectorAll('.add-contribution').forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      const id = parseInt(event.target.getAttribute('data-id'));
+      const input = document.getElementById('contrib-' + id);
+      const val = parseFloat(input.value);
+      if (!isNaN(val) && val > 0) {
+        const goal = state.goals.find((g) => g.id === id);
+        if (goal) {
+          goal.saved += val;
+          saveGoals();
+          renderGoals();
+          renderInsights();
+          input.value = '';
+        }
+      }
+    });
+  });
+  container.querySelectorAll('.delete-goal').forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      const id = parseInt(event.target.getAttribute('data-id'));
+      state.goals = state.goals.filter((g) => g.id !== id);
+      saveGoals();
+      renderGoals();
+      renderInsights();
+    });
+  });
+}
+
+// Render the list of transactions
+function renderTransactions() {
+  const list = document.getElementById('transactions-list');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!state.transactions || state.transactions.length === 0) {
+    list.textContent = 'No transactions recorded yet.';
+    return;
+  }
+  const ul = document.createElement('ul');
+  state.transactions.forEach((tx) => {
+    const li = document.createElement('li');
+    const currencySymbol = CURRENCY_SYMBOLS[state.currency] || '';
+    const amountFormatted = formatCurrencyValue(Math.abs(tx.amount));
+    const sign = tx.amount < 0 ? '-' : '';
+    const categoryText = tx.category ? ` (${tx.category})` : '';
+    li.innerHTML = `<strong>${tx.desc}</strong> – ${tx.date} – ${sign}${currencySymbol}${amountFormatted}${categoryText}`;
+    ul.appendChild(li);
+  });
+  list.appendChild(ul);
 }
 
 function toggleBillPaid(id) {
@@ -1168,6 +1310,9 @@ function renderInsights() {
   const totalMinPayments = totalCardMin + totalLoanMin;
   const currencySymbol = CURRENCY_SYMBOLS[state.currency] || '';
   const totalDebt = totalCardBalance + totalLoanBalance;
+  // Calculate cash flow from transactions
+  const totalIncome = state.transactions.reduce((sum, t) => sum + (t.amount > 0 ? t.amount : 0), 0);
+  const totalExpenses = state.transactions.reduce((sum, t) => sum + (t.amount < 0 ? t.amount : 0), 0);
   // Build the insights HTML
   let html = '';
   html += `<p><strong>Total Card Balance:</strong> ${currencySymbol}${formatCurrencyValue(totalCardBalance)}</p>`;
@@ -1182,6 +1327,18 @@ function renderInsights() {
     } else {
       html += `<p><em>Your budget covers the minimum payments.</em></p>`;
     }
+  }
+  // Append income and expense summaries
+  html += `<p><strong>Total Income:</strong> ${currencySymbol}${formatCurrencyValue(totalIncome)}</p>`;
+  html += `<p><strong>Total Expenses:</strong> ${currencySymbol}${formatCurrencyValue(Math.abs(totalExpenses))}</p>`;
+  const net = totalIncome + totalExpenses;
+  const netLabel = net >= 0 ? 'Net Cash Flow' : 'Net Cash Flow';
+  html += `<p><strong>${netLabel}:</strong> ${currencySymbol}${formatCurrencyValue(net)}</p>`;
+
+  // Append savings summary
+  if (state.goals && state.goals.length > 0) {
+    const totalSavings = state.goals.reduce((sum, g) => sum + g.saved, 0);
+    html += `<p><strong>Total Savings:</strong> ${currencySymbol}${formatCurrencyValue(totalSavings)}</p>`;
   }
   insightsDiv.innerHTML = html;
 }
@@ -1269,12 +1426,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (cardForm) cardForm.addEventListener('submit', handleAddCard);
   const loanForm = document.getElementById('loan-form');
   if (loanForm) loanForm.addEventListener('submit', handleAddLoan);
+
+  // Transaction form handler
+  const transactionForm = document.getElementById('transaction-form');
+  if (transactionForm) transactionForm.addEventListener('submit', handleAddTransaction);
+
+  // Goal form handler
+  const goalForm = document.getElementById('goal-form');
+  if (goalForm) goalForm.addEventListener('submit', handleAddGoal);
   // Currency selector change handler
   const currencySelect = document.getElementById('currency-selector');
   if (currencySelect) {
     // Set initial value based on state
     currencySelect.value = state.currency;
-    currencySelect.addEventListener('change', (e) => {
+      currencySelect.addEventListener('change', (e) => {
       state.currency = e.target.value;
       saveCurrency();
       // Re-render all UI with new currency
@@ -1282,6 +1447,8 @@ document.addEventListener('DOMContentLoaded', () => {
       renderCards();
       renderInsights();
       renderLoans();
+      renderTransactions();
+      renderGoals();
     });
   }
 
@@ -1334,6 +1501,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderCards();
   renderLoans();
   renderInsights();
+  renderTransactions();
+  renderGoals();
 
   // Register service worker for PWA capabilities
   registerServiceWorker();
