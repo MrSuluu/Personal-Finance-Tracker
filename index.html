@@ -105,19 +105,23 @@
           </div>
           <div class="form-group">
             <label for="loan-principal">Principal</label>
-            <input type="number" id="loan-principal" step="0.01" min="0" required />
+          <input type="number" id="loan-principal" step="0.01" min="0" required 
+            placeholder="0.00" title="Total amount borrowed (principal)" />
           </div>
           <div class="form-group">
             <label for="loan-rate">Interest Rate (%)</label>
-            <input type="number" id="loan-rate" step="0.01" min="0" required />
+          <input type="number" id="loan-rate" step="0.01" min="0" required 
+            placeholder="e.g., 5" title="Annual interest rate (%)" />
           </div>
           <div class="form-group">
             <label for="loan-term">Term (months)</label>
-            <input type="number" id="loan-term" step="1" min="1" required />
+          <input type="number" id="loan-term" step="1" min="1" required 
+            placeholder="12" title="Loan term in months" />
           </div>
           <div class="form-group">
             <label for="loan-due-date">Next Payment Due</label>
-            <input type="date" id="loan-due-date" />
+          <input type="date" id="loan-due-date" 
+            title="Next payment due date (YYYY-MM-DD)" />
           </div>
           <button type="submit">Add Loan</button>
         </form>
@@ -131,27 +135,33 @@
         <form id="card-form" class="form">
           <div class="form-group">
             <label for="card-name">Card Name</label>
-            <input type="text" id="card-name" required />
+          <input type="text" id="card-name" required 
+            placeholder="Card name" title="Name of the credit card" />
           </div>
           <div class="form-group">
             <label for="card-balance">Balance</label>
-            <input type="number" id="card-balance" step="0.01" min="0" required />
+          <input type="number" id="card-balance" step="0.01" min="0" required 
+            placeholder="0.00" title="Current outstanding balance" />
           </div>
           <div class="form-group">
             <label for="card-rate">Interest Rate (%)</label>
-            <input type="number" id="card-rate" step="0.01" min="0" placeholder="e.g., 20" />
+          <input type="number" id="card-rate" step="0.01" min="0" placeholder="e.g., 20" 
+            title="Annual interest rate (%)" />
           </div>
           <div class="form-group">
             <label for="card-due-date">Payment Due Date</label>
-            <input type="date" id="card-due-date" required />
+          <input type="date" id="card-due-date" required 
+            title="Next payment due date (YYYY-MM-DD)" />
           </div>
           <div class="form-group">
             <label for="card-installments">Installments (months)</label>
-            <input type="number" id="card-installments" min="0" placeholder="0" />
+          <input type="number" id="card-installments" min="0" placeholder="0" 
+            title="Number of monthly payments" />
           </div>
           <div class="form-group">
             <label for="card-installment-amount">Installment Amount</label>
-            <input type="number" id="card-installment-amount" step="0.01" min="0" placeholder="0.00" />
+          <input type="number" id="card-installment-amount" step="0.01" min="0" placeholder="0.00" 
+            title="Preferred monthly payment amount" />
           </div>
           <button type="submit">Add Card</button>
         </form>

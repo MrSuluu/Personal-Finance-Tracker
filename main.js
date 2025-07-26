@@ -460,11 +460,36 @@ function handleAddCard(e) {
   const rate = parseFloat(rateVal);
   const interestRate = !isNaN(rate) && rate > 0 ? rate / 100 : 0;
   // Auto-calculate if one value is missing
+  // Auto‑calculate missing values.  If the user enters only the number of
+  // instalments (term) or only the instalment amount, compute the other using
+  // the loan amortisation formula.  When an annual interest rate is supplied,
+  // the monthly payment is calculated so that the card is paid off over the
+  // given number of months.  If no interest rate is provided, fall back to
+  // simple division of the balance by the instalment count.
   if (installments > 0 && installmentAmount <= 0) {
-    installmentAmount = balance / installments;
+    if (interestRate > 0) {
+      const monthlyRate = interestRate / 12;
+      // payment = P * r / (1 - (1 + r)^(-n))
+      installmentAmount = (balance * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -installments));
+    } else {
+      installmentAmount = balance / installments;
+    }
   } else if (installmentAmount > 0 && installments <= 0) {
-    installments = Math.ceil(balance / installmentAmount);
+    if (interestRate > 0) {
+      const monthlyRate = interestRate / 12;
+      // Solve for n: n = -log(1 - (r * P)/payment) / log(1 + r)
+      const ratio = 1 - (monthlyRate * balance) / installmentAmount;
+      if (ratio <= 0) {
+        installments = 1;
+      } else {
+        installments = Math.ceil(-Math.log(ratio) / Math.log(1 + monthlyRate));
+      }
+    } else {
+      installments = Math.ceil(balance / installmentAmount);
+    }
   }
+  // Round the computed instalment amount to two decimal places for display
+  installmentAmount = Math.round(installmentAmount * 100) / 100;
   if (editingCardId !== null) {
     // Update existing card
     const index = state.cards.findIndex((c) => c.id === editingCardId);
